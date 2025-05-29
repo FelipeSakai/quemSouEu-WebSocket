@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quem Sou Eu</title>
+</head>
+<body>
+  <h1>Quem Sou Eu</h1>
+  <button onclick="escolher('chooser')">Escolher a Pessoa</button>
+  <button onclick="escolher('asker')">Fazer Perguntas</button>
+
+  <script>
+    function escolher(role) {
+      sessionStorage.setItem('role', role);
+      window.location.href = 'jogo.html';
+    }
+  </script>
+</body>
+</html>

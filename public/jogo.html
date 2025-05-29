@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <h1 id="titulo">Jogo - Quem Sou Eu</h1>
+
+  <div id="chooser-box" style="display:none">
+    <label>Quem é a pessoa?</label>
+    <input type="text" id="person">
+    <button onclick="setPerson()">Enviar</button>
+  </div>
+
+  <div id="asker-box" style="display:none">
+    <label>Digite sua pergunta:</label>
+    <input type="text" id="question">
+    <button onclick="sendQuestion()">Perguntar</button>
+    <button onclick="guess()">Adivinhar</button>
+    <div id="tentativas"></div>
+  </div>
+
+  <div id="resposta"></div>
+  <div id="historico"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
