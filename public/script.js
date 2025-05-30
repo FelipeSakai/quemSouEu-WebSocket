@@ -23,7 +23,7 @@ socket.onmessage = (event) => {
 
   if (data.type === 'game-started') {
     Swal.fire({
-      title: '🔥 Jogo Iniciado!',
+      title: 'Jogo Iniciado!',
       text: 'Agora você pode começar a jogar!',
       icon: 'success',
       confirmButtonText: 'Vamos lá!'
@@ -67,13 +67,22 @@ socket.onmessage = (event) => {
   }
 
   if (data.type === 'guess-result' && role === 'asker') {
-    jogoFinalizado = true;
-    Swal.fire({
-      title: data.correct ? '🎉 Acertou!' : '❌ Errou!',
-      text: `Tentativas: ${data.attempts}`,
-      icon: data.correct ? 'success' : 'error',
-      confirmButtonText: 'OK'
-    });
+    if (data.correct) {
+      jogoFinalizado = true;
+      Swal.fire({
+        title: 'Acertou!',
+        text: `Tentativas: ${data.attempts}`,
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+    } else {
+      Swal.fire({
+        title: 'Errou!',
+        text: `Tentativas: ${data.attempts}`,
+        icon: 'error',
+        confirmButtonText: 'Continuar'
+      });
+    }
     document.getElementById('tentativas').innerText = `Tentativas: ${data.attempts}`;
   }
 
@@ -96,6 +105,20 @@ socket.onmessage = (event) => {
     perguntaBloqueada = false;
     jogoFinalizado = false;
     location.reload();
+  }
+
+  if (data.type === 'redirect-login') {
+    sessionStorage.clear();
+    Swal.fire({
+      title: 'Nova rodada!',
+      text: 'Você será redirecionado para escolher seu papel novamente.',
+      icon: 'info',
+      timer: 2000,
+      showConfirmButton: false
+    });
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 2000);
   }
 
   if (data.type === 'error') {

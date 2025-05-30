@@ -1,4 +1,3 @@
-// server.js
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -43,6 +42,22 @@ function updatePlayerList() {
   });
 }
 
+function resetGameState() {
+  gameState = {
+    chosenPerson: '',
+    attempts: 0,
+    finished: false,
+    waitingAnswer: false,
+    gameStarted: false
+  };
+  players.forEach(p => {
+    if (p.readyState === WebSocket.OPEN) {
+      p.send(JSON.stringify({ type: 'redirect-login' }));
+    }
+  });
+  players = [];
+}
+
 wss.on('connection', ws => {
   ws.on('message', message => {
     const data = JSON.parse(message);
@@ -65,13 +80,14 @@ wss.on('connection', ws => {
       }
 
       updatePlayerList();
-    }
-    if (players.length === 2) {
-      players.forEach(p => {
-        if (p.readyState === WebSocket.OPEN) {
-          p.send(JSON.stringify({ type: 'ready' }));
-        }
-      });
+
+      if (players.length === 2) {
+        players.forEach(p => {
+          if (p.readyState === WebSocket.OPEN) {
+            p.send(JSON.stringify({ type: 'ready' }));
+          }
+        });
+      }
     }
 
     if (data.type === 'set-person') {
@@ -122,48 +138,38 @@ wss.on('connection', ws => {
       if (asker) {
         const correct = data.correct === true;
         const guess = data.guess || '';
-        gameState.finished = correct;
-        asker.send(JSON.stringify({
-          type: 'guess-result',
-          correct,
-          guess,
-          attempts: gameState.attempts
-        }));
         if (correct) {
+          gameState.finished = true;
+          asker.send(JSON.stringify({
+            type: 'guess-result',
+            correct,
+            guess,
+            attempts: gameState.attempts
+          }));
           setTimeout(() => {
             broadcast({ type: 'restart-prompt' });
           }, 1000);
+        } else {
+          asker.send(JSON.stringify({
+            type: 'guess-result',
+            correct,
+            guess,
+            attempts: gameState.attempts
+          }));
         }
+        gameState.waitingAnswer = false;
       }
     }
 
     if (data.type === 'restart') {
-      gameState = {
-        chosenPerson: '',
-        attempts: 0,
-        finished: false,
-        waitingAnswer: false,
-        gameStarted: false
-      };
-      players.forEach(p => {
-        if (p.readyState === WebSocket.OPEN) {
-          p.send(JSON.stringify({ type: 'restart' }));
-        }
-      });
-      updatePlayerList();
+      resetGameState();
     }
   });
 
   ws.on('close', () => {
     players = players.filter(p => p !== ws);
     updatePlayerList();
-    if (players.length < 2) gameState = {
-      chosenPerson: '',
-      attempts: 0,
-      finished: false,
-      waitingAnswer: false,
-      gameStarted: false
-    };
+    if (players.length < 2) resetGameState();
   });
 });
 

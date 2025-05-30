@@ -2,75 +2,29 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login - Quem Sou Eu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quem Sou Eu - Login</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <h1>Quem Sou Eu</h1>
-  <p>Informe seu nome e escolha seu papel:</p>
+  <label for="username">Digite seu nome:</label>
+  <input type="text" id="username" placeholder="Ex: Felipe"><br><br>
 
-  <input type="text" id="nome" placeholder="Seu nome">
-  <div style="margin-top: 20px;">
-    <div>
-      <button onclick="escolher('chooser')">Sou quem escolhe</button>
-      <p id="chooser-name" class="player-name"></p>
-    </div>
-    <div>
-      <button onclick="escolher('asker')">Sou quem pergunta</button>
-      <p id="asker-name" class="player-name"></p>
-    </div>
-  </div>
+  <button onclick="escolher('chooser')">Escolher a Pessoa</button>
+  <button onclick="escolher('asker')">Fazer Perguntas</button>
 
   <script>
-    const nomeInput = document.getElementById('nome');
-    let socket;
-
     function escolher(role) {
-      const nome = nomeInput.value.trim();
+      const nome = document.getElementById('username').value.trim();
       if (!nome) {
-        Swal.fire('Digite seu nome!', '', 'warning');
+        alert('Digite seu nome antes de continuar.');
         return;
       }
-
-      socket = new WebSocket(`ws://${location.host}`);
-      socket.onopen = () => {
-        socket.send(JSON.stringify({ type: 'role', role, username: nome }));
-      };
-
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'error') {
-          Swal.fire('Erro', data.message, 'error');
-          socket.close();
-        }
-
-        if (data.type === 'game-started' || data.type === 'ready') {
-          sessionStorage.setItem('role', role);
-          sessionStorage.setItem('username', nome);
-          window.location.href = 'jogo.html';
-        }
-
-        if (data.type === 'player-update') {
-          const el = document.getElementById(`${data.role}-name`);
-          el.textContent = data.username ? `👤 ${data.username}` : 'Aguardando jogador...';
-        }
-      };
-
-      socket.onerror = () => {
-        Swal.fire('Erro', 'Erro ao conectar com o servidor.', 'error');
-      };
+      sessionStorage.setItem('username', nome);
+      sessionStorage.setItem('role', role);
+      window.location.href = 'jogo.html';
     }
-
-    const tempSocket = new WebSocket(`ws://${location.host}`);
-    tempSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'player-update') {
-        const el = document.getElementById(`${data.role}-name`);
-        el.textContent = data.username ? `👤 ${data.username}` : 'Aguardando jogador...';
-      }
-    };
   </script>
 </body>
 </html>
