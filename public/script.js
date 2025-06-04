@@ -1,6 +1,7 @@
 const role = sessionStorage.getItem('role');
 const username = sessionStorage.getItem('username');
-const socket = new WebSocket(`ws://${location.host}`);
+const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+const socket = new WebSocket(`${protocol}://${location.host}`);
 const historico = document.getElementById('historico');
 let ultimaPergunta = '';
 let perguntaBloqueada = false;

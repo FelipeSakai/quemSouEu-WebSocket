@@ -52,7 +52,7 @@ function resetGameState() {
   };
   players.forEach(p => {
     if (p.readyState === WebSocket.OPEN) {
-      p.send(JSON.stringify({ type: 'redirect-login' }));
+      p.send(JSON.stringify({ type: 'restart' }));
     }
   });
   players = [];
@@ -135,29 +135,26 @@ wss.on('connection', ws => {
 
     if (data.type === 'guess-response') {
       const asker = players.find(p => p.role === 'asker');
+      const correct = data.correct === true;
+      const guess = data.guess || '';
+
       if (asker) {
-        const correct = data.correct === true;
-        const guess = data.guess || '';
         if (correct) {
           gameState.finished = true;
-          asker.send(JSON.stringify({
-            type: 'guess-result',
-            correct,
-            guess,
-            attempts: gameState.attempts
-          }));
+        }
+        gameState.waitingAnswer = false;
+        asker.send(JSON.stringify({
+          type: 'guess-result',
+          correct,
+          guess,
+          attempts: gameState.attempts
+        }));
+
+        if (correct) {
           setTimeout(() => {
             broadcast({ type: 'restart-prompt' });
           }, 1000);
-        } else {
-          asker.send(JSON.stringify({
-            type: 'guess-result',
-            correct,
-            guess,
-            attempts: gameState.attempts
-          }));
         }
-        gameState.waitingAnswer = false;
       }
     }
 
